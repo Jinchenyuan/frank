@@ -100,47 +100,34 @@ const runLcu = async () => {
 }
 
 const startClient = async () => {
-  const clientExe = appConfig.get('gameDirectory')
-
-  if ( clientExe === ''){
-    new Notification({
-      title:"请在设置中获取LOL启动文件",
-      body:"启动文件路径例如: C:\\LOL\\英雄联盟\\TCLS\\Client.exe",
-      icon:iconPath,
-    }).show()
     credentials = await getAuthFromCmd()
     appConfig.set('credentials',credentials)
-    return
-  }
 
-  getAuthFromCmd().then(async (res) => {
-    if (res.port === ''){
-      // 启动英雄联盟客户端
-      mainWindow.webContents.send('client-starting')
-      startClientExe(clientExe)
-      // 二十秒后执行下列函数
-      setTimeout(()  => {
-        // 每一秒查看英雄联盟客户端是否登录成功
-        // 登录成功后获取相应的数据 结束时间间隔函数
-        let idSetInterval =  setInterval(() => {
-          getAuthFromCmd().then(async (res) => {
-            if (res.port != ''){
-              clearInterval(idSetInterval)
-              credentials = res
-              appConfig.set('credentials',credentials)
-              setTimeout(() => {
-                runLcu()
-              },6666)
-            }
-          })
-        },1000)
-      },20000)
-    }else {
-      credentials = res
-      appConfig.set('credentials',res)
-      runLcu()
-    }
-  })
+    getAuthFromCmd().then(async (res) => {
+      if (res.port === ''){
+        // 2秒后执行下列函数
+        setTimeout(()  => {
+          // 每一秒查看英雄联盟客户端是否登录成功
+          // 登录成功后获取相应的数据 结束时间间隔函数
+          let idSetInterval =  setInterval(() => {
+            getAuthFromCmd().then(async (res) => {
+              if (res.port != ''){
+                clearInterval(idSetInterval)
+                credentials = res
+                appConfig.set('credentials',credentials)
+                setTimeout(() => {
+                  runLcu()
+                },6666)
+              }
+            })
+          },1000)
+        },2000)
+      }else {
+        credentials = res
+        appConfig.set('credentials',res)
+        runLcu()
+      }
+    })
 }
 
 const closeWin = (window) => {

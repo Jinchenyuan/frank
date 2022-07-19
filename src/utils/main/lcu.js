@@ -52,7 +52,7 @@ export const autoAcceptGame = async (credentials) => {
   },setTime)
 }
 // 获取选人会话
-export const champSelectSession = async (credentials,idSetInterval) => {
+export const champSelectSession = async (credentials, idSetInterval) => {
   const res = await createHttp1Request({
     method: "GET",
     url: '/lol-champ-select/v1/session'
@@ -87,15 +87,15 @@ export const champSelectSession = async (credentials,idSetInterval) => {
 export const listenChampSelect = async (ws, assistWindow, credentials) => {
   ws.subscribe('/lol-champ-select/v1/session', async (data) => {
     const currentChampId = await getCurrentChamp(credentials)
-    if (currentChampId !=0 ){
-      pickChampAram(assistWindow,currentChampId)
-    }else {
+    if (currentChampId != 0) {
+      pickChampAram(assistWindow, currentChampId)
+    } else {
       let localPlayerCellId = data.localPlayerCellId
       let actions = data.actions
       for (let action of actions) {
         for (let actionElement of action) {
           if (actionElement.actorCellId == localPlayerCellId && actionElement.isInProgress && actionElement.type != 'ban') {
-              pickChampRank(assistWindow,actionElement.championId)
+            pickChampRank(assistWindow, actionElement.championId)
           }
         }
       }
@@ -103,14 +103,15 @@ export const listenChampSelect = async (ws, assistWindow, credentials) => {
   })
 }
 // 大乱斗选择英雄
-const pickChampAram = async (assistWindow,currentChampId) => {
-  if (currentChampId !=0){
+const pickChampAram = async (assistWindow, currentChampId) => {
+  if (currentChampId != 0) {
     assistWindow.webContents.send('current-champ-select', {
-      champId:currentChampId,mode:'aram'})
+      champId: currentChampId, mode: 'aram'
+    })
   }
 }
 // 排位或者匹配选择英雄
-const pickChampRank = async (assistWindow,currentChampId) => {
+const pickChampRank = async (assistWindow, currentChampId) => {
   if (currentChampId != 0) {
     assistWindow.webContents.send('current-champ-select', {
       champId: currentChampId, mode: 'other'
@@ -119,7 +120,7 @@ const pickChampRank = async (assistWindow,currentChampId) => {
 }
 // 查询当前游戏模式
 const queryCurrentGameMode = async (credentials) => {
-// 获取当前游戏模式信息
+  // 获取当前游戏模式信息
   const currentGameInfo = (await createHttp1Request({
     method: "GET",
     url: '/lol-gameflow/v1/session',
@@ -187,7 +188,7 @@ export const getChatSelectChampId = async (credentials) => {
     }, credentials))
     const chatSelectGroup = chatList.json().find((i) => i.type == "championSelect")
     return chatSelectGroup.id
-  }catch (e){
+  } catch (e) {
     return null
   }
 }
@@ -210,9 +211,8 @@ export const queryAllSummonerId = async (credentials) => {
   // let summonerIdList = [2947489903,2943068890,2205753043394816,2937983583,2932246721]
   return summonerIdList
 }
-
 // 根据召唤师ID查询信息
-const querySummonerInfo = async (credentials,summonerId) => {
+const querySummonerInfo = async (credentials, summonerId) => {
   const summonerInfo = (await createHttp1Request({
     method: "GET",
     url: `/lol-summoner/v1/summoners/${summonerId}`,
@@ -220,22 +220,22 @@ const querySummonerInfo = async (credentials,summonerId) => {
   return summonerInfo
 }
 // 获取召唤师昵称和等级和头像
-export const getSummonerNickName = async (credentials,enemyIdList) => {
+export const getSummonerNickName = async (credentials, enemyIdList) => {
   console.log('[info] 获取召唤师昵称和等级和头像...')
   const session = await createHttpSession(credentials)
   let allSummonerId
-  if (enemyIdList != null){
+  if (enemyIdList != null) {
     allSummonerId = enemyIdList
-  }else {
+  } else {
     allSummonerId = await queryAllSummonerId(credentials)
   }
-  if (allSummonerId == null){
+  if (allSummonerId == null) {
     return null
   }
 
   let allSummonerNickName = []
   for (const summonerId of allSummonerId) {
-    const summonerInfo = await querySummonerInfo(credentials,summonerId)
+    const summonerInfo = await querySummonerInfo(credentials, summonerId)
     let name = summonerInfo.displayName
     let iconId = summonerInfo.profileIconId
     let level = summonerInfo.summonerLevel
@@ -255,22 +255,22 @@ export const getSummonerNickName = async (credentials,enemyIdList) => {
   return allSummonerNickName
 }
 // 获取当前排位模式的段位分数
-const queryRankPoint = async (credentials,puuid) => {
+const queryRankPoint = async (credentials, puuid) => {
   const currentMatchMode = await queryCurrentGameMode(credentials)
-  if (currentMatchMode !=420 && currentMatchMode!= 440){
+  if (currentMatchMode != 420 && currentMatchMode != 440) {
     return null
   }
-  const rankData =  await accordingToRankModeQueryRankPoint(credentials,currentMatchMode,puuid)
+  const rankData = await accordingToRankModeQueryRankPoint(credentials, currentMatchMode, puuid)
   // 查询单双排的分数
   return rankData
 }
 // 查询不同排位模式的段位分数
-const accordingToRankModeQueryRankPoint = async (credentials,mode,puuid) => {
+const accordingToRankModeQueryRankPoint = async (credentials, mode, puuid) => {
   const matchType = mode === 420 ? 'RANKED_SOLO_5x5' : 'RANKED_FLEX_SR'
   const rankData = (await createHttp1Request({
-    method:"GET",
-    url:`/lol-ranked/v1/ranked-stats/${puuid}`
-  },credentials)).json().queueMap[matchType]
+    method: "GET",
+    url: `/lol-ranked/v1/ranked-stats/${puuid}`
+  }, credentials)).json().queueMap[matchType]
 
   const tier = englishToChinese(rankData.tier)
   const division = rankData.division === 'NA' ? '' : rankData.division
@@ -279,19 +279,19 @@ const accordingToRankModeQueryRankPoint = async (credentials,mode,puuid) => {
   return `${tier}${division}  ${leaguePoints}`
 }
 // 发送消息到当前聊天界面
-export const sendMessageToChat = async (credentials,message) => {
+export const sendMessageToChat = async (credentials, message) => {
   const chatId = await getChatSelectChampId(credentials)
   await createHttp1Request({
     method: "POST",
     url: `/lol-chat/v1/conversations/${chatId}/messages`,
-    body:{
-      "body":message,
-      "type":'chat'
+    body: {
+      "body": message,
+      "type": 'chat'
     }
   }, credentials)
 }
 // 获取每局游戏中,召唤师的信息
-export const queryMatchSummonerInfo = async (credentials,summonerId) => {
+export const queryMatchSummonerInfo = async (credentials, summonerId) => {
   const matchList = (await createHttp1Request({
     method: "GET",
     url: `/lol-match-history/v3/matchlist/account/${summonerId}`,
@@ -303,19 +303,19 @@ export const queryMatchSummonerInfo = async (credentials,summonerId) => {
     // 召唤师选择的英雄
     let champImgUrl = `https://game.gtimg.cn/images/lol/act/img/champion/${champDict[String(matchListElement.participants[0].championId)].alias}.png`
     // 是否取得胜利
-    let isWin = matchListElement.participants[0].stats.win == true ? '胜利' :'失败'
+    let isWin = matchListElement.participants[0].stats.win == true ? '胜利' : '失败'
     // 召唤师技能1
     let spell1Id = getspellImgUrl(matchListElement.participants[0].spell1Id)
     // 召唤师技能2
     let spell2Id = getspellImgUrl(matchListElement.participants[0].spell2Id)
     // 物品
-    let item0 =  getItemImgUrl(matchListElement.participants[0].stats.item0)
-    let item1 =  getItemImgUrl(matchListElement.participants[0].stats.item1)
-    let item2 =  getItemImgUrl(matchListElement.participants[0].stats.item2)
-    let item3 =  getItemImgUrl(matchListElement.participants[0].stats.item3)
-    let item4 =  getItemImgUrl(matchListElement.participants[0].stats.item4)
-    let item5 =  getItemImgUrl(matchListElement.participants[0].stats.item5)
-    let item6 =  getItemImgUrl(matchListElement.participants[0].stats.item6)
+    let item0 = getItemImgUrl(matchListElement.participants[0].stats.item0)
+    let item1 = getItemImgUrl(matchListElement.participants[0].stats.item1)
+    let item2 = getItemImgUrl(matchListElement.participants[0].stats.item2)
+    let item3 = getItemImgUrl(matchListElement.participants[0].stats.item3)
+    let item4 = getItemImgUrl(matchListElement.participants[0].stats.item4)
+    let item5 = getItemImgUrl(matchListElement.participants[0].stats.item5)
+    let item6 = getItemImgUrl(matchListElement.participants[0].stats.item6)
     // 游戏模式
     let queueId = queryGameType(matchListElement.queueId)
     // 召唤师位置
@@ -323,22 +323,23 @@ export const queryMatchSummonerInfo = async (credentials,summonerId) => {
     // 击杀数目
     let kills = matchListElement.participants[0].stats.kills
     // 死亡数目
-    let deaths =matchListElement.participants[0].stats.deaths
+    let deaths = matchListElement.participants[0].stats.deaths
     // 助攻数目
     let assists = matchListElement.participants[0].stats.assists
     // 游戏时间
     let matchTime = (matchListElement.gameCreationDate).split('T')[0]
     let matchJson = {
-      gameId,champImgUrl,isWin,spell1Id,spell2Id,item0,item1,item2,item3,item4,item5,item6,queueId,
-      lane,kills,deaths,assists,matchTime}
+      gameId, champImgUrl, isWin, spell1Id, spell2Id, item0, item1, item2, item3, item4, item5, item6, queueId,
+      lane, kills, deaths, assists, matchTime
+    }
     matchInfoList.push(matchJson)
   }
-  matchInfoList.push(await querySummonerSuperChampData(credentials,summonerId))
+  matchInfoList.push(await querySummonerSuperChampData(credentials, summonerId))
   console.log('[info] 查询战绩函数执行了...')
   return matchInfoList
 }
 // 获取召唤师英雄绝活数据
-const querySummonerSuperChampData = async (credentials,summonerId) => {
+const querySummonerSuperChampData = async (credentials, summonerId) => {
   const summonerSuperChampData = (await createHttp1Request({
     method: "GET",
     url: `/lol-collections/v1/inventories/${summonerId}/champion-mastery`,
@@ -348,17 +349,17 @@ const querySummonerSuperChampData = async (credentials,summonerId) => {
     let champImgUrl = `https://game.gtimg.cn/images/lol/act/img/champion/${champDict[String(summonerSuperChampDatum.championId)].alias}.png`
     let champLevel = summonerSuperChampDatum.championLevel
     let championPoints = summonerSuperChampDatum.championPoints
-    superChampList.push({champImgUrl,champLevel,championPoints})
+    superChampList.push({ champImgUrl, champLevel, championPoints })
   }
   return superChampList
 }
 // 根据游戏模式ID判断 游戏模式
 const queryGameType = (queueId) => {
   switch (queueId) {
-    case 420 : return '排位赛 单排/双排';
-    case 430 : return '匹配模式';
-    case 440 : return '排位赛 灵活排位';
-    case 450 : return '极地大乱斗';
+    case 420: return '排位赛 单排/双排';
+    case 430: return '匹配模式';
+    case 440: return '排位赛 灵活排位';
+    case 450: return '极地大乱斗';
   }
   return '其它模式'
 }
@@ -374,35 +375,35 @@ const querySummonerPosition = (lane) => {
 }
 // 通过物品id获取图片地址
 const getItemImgUrl = (item) => {
-  if (item == 7013){
+  if (item == 7013) {
     return `https://game.gtimg.cn/images/lol/act/img/item/3802.png`
-  }else if (item== 7004){
+  } else if (item == 7004) {
     return `https://game.gtimg.cn/images/lol/act/img/item/3068.png`
   }
-  if (item == 0){
+  if (item == 0) {
     return 'https://gw.alipayobjects.com/zos/rmsportal/wYnHWSXDmBhiEmuwXsym.png?x-oss-process=image%2Fresize%2Cm_fill%2Cw_64%2Ch_64%2Fformat%2Cpng'
-  }else {
+  } else {
     return `https://game.gtimg.cn/images/lol/act/img/item/${item}.png`
   }
 }
 // 通过召唤师id获取召唤师图片地址
 const getspellImgUrl = (spellId) => {
   switch (spellId) {
-    case 4:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_flash.png';
-    case 14:return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerIgnite.png';
-    case 11:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_smite.png';
-    case 6:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_haste.png';
-    case 12:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_teleport.png';
-    case 21:return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerBarrier.png';
-    case 3:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_exhaust.png';
-    case 1:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_boost.png';
-    case 7:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_heal.png';
-    case 32:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_Mark.png'
+    case 4: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_flash.png';
+    case 14: return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerIgnite.png';
+    case 11: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_smite.png';
+    case 6: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_haste.png';
+    case 12: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_teleport.png';
+    case 21: return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerBarrier.png';
+    case 3: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_exhaust.png';
+    case 1: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_boost.png';
+    case 7: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_heal.png';
+    case 32: return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_Mark.png'
   }
   return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerMana.png'
 }
 // 获取一局游戏的详细数据
-export const queryGameDetailsData = async (gameId,credentials)  => {
+export const queryGameDetailsData = async (gameId, credentials) => {
   const response = (await createHttp1Request({
     method: 'GET',
     url: `/lol-match-history/v1/games/${gameId}`
@@ -411,7 +412,7 @@ export const queryGameDetailsData = async (gameId,credentials)  => {
   return detailsList
 }
 // 获取召唤师participants下面的详细数据
-const getParticipantsDetails = (res,participants, participantIdentities) => {
+const getParticipantsDetails = (res, participants, participantIdentities) => {
   const nameList = getparticipantIdAndName(participantIdentities)
   let titleList = getDetailsTitle(res)
   let detalisList = []
@@ -423,12 +424,12 @@ const getParticipantsDetails = (res,participants, participantIdentities) => {
     team100Kills += participants[i].stats.kills
     team200Kills += participants[i + 5].stats.kills
     team100GoldEarned += participants[i].stats.goldEarned
-    team200GoldEarned += participants[i+5].stats.goldEarned
+    team200GoldEarned += participants[i + 5].stats.goldEarned
 
     detalisList.push([analyticalData(participants[i],nameList[i].name,nameList[i].summonerId),
       analyticalData(participants[i+5],nameList[i+5].name,nameList[i+5].summonerId)])
   }
-  titleList.push(team100Kills,team200Kills,goldToStr(team100GoldEarned),goldToStr(team200GoldEarned))
+  titleList.push(team100Kills, team200Kills, goldToStr(team100GoldEarned), goldToStr(team200GoldEarned))
   detalisList.push(titleList)
   return detalisList
 }
@@ -438,25 +439,25 @@ const analyticalData  = (participant,nameList,accountIdList) => {
     name: nameList,
     accountId:accountIdList,
     teamType: participant.teamId,
-    champLevel:participant.stats.champLevel,
+    champLevel: participant.stats.champLevel,
     champImgUrl: `https://game.gtimg.cn/images/lol/act/img/champion/${champDict[participant.championId].alias}.png`,
-    spell1Id:getspellImgUrl(participant.spell1Id),
-    spell2Id:getspellImgUrl(participant.spell2Id),
-    item0:getItemImgUrl(participant.stats.item0),
-    item1:getItemImgUrl(participant.stats.item1),
-    item2:getItemImgUrl(participant.stats.item2),
-    item3:getItemImgUrl(participant.stats.item3),
-    item4:getItemImgUrl(participant.stats.item4),
-    item5:getItemImgUrl(participant.stats.item5),
-    item6:getItemImgUrl(participant.stats.item6),
-    kills:participant.stats.kills,
-    deaths:participant.stats.deaths,
-    assists:participant.stats.assists,
-    totalDamageDealtToChampions:participant.stats.totalDamageDealtToChampions,
-    totalDamageTaken:participant.stats.totalDamageTaken,
-    goldEarned:participant.stats.goldEarned,
-    visionScore:participant.stats.visionScore,
-    totalMinionsKilled:participant.stats.totalMinionsKilled+participant.stats.neutralMinionsKilled
+    spell1Id: getspellImgUrl(participant.spell1Id),
+    spell2Id: getspellImgUrl(participant.spell2Id),
+    item0: getItemImgUrl(participant.stats.item0),
+    item1: getItemImgUrl(participant.stats.item1),
+    item2: getItemImgUrl(participant.stats.item2),
+    item3: getItemImgUrl(participant.stats.item3),
+    item4: getItemImgUrl(participant.stats.item4),
+    item5: getItemImgUrl(participant.stats.item5),
+    item6: getItemImgUrl(participant.stats.item6),
+    kills: participant.stats.kills,
+    deaths: participant.stats.deaths,
+    assists: participant.stats.assists,
+    totalDamageDealtToChampions: participant.stats.totalDamageDealtToChampions,
+    totalDamageTaken: participant.stats.totalDamageTaken,
+    goldEarned: participant.stats.goldEarned,
+    visionScore: participant.stats.visionScore,
+    totalMinionsKilled: participant.stats.totalMinionsKilled + participant.stats.neutralMinionsKilled
   }
 }
 // 获取召唤师participantId 和 name
@@ -474,9 +475,9 @@ const getDetailsTitle = (gameInfo) => {
   let createTime = (new Date(gameInfo.gameCreation).toLocaleString()).split(' ')
   let dateStr = createTime[0].slice(5)
   let timeStr = createTime[1].slice(0, 5)
-  if (queryGameType(gameInfo.queueId).indexOf(' ') != -1){
+  if (queryGameType(gameInfo.queueId).indexOf(' ') != -1) {
     var lane = queryGameType(gameInfo.queueId).split(' ')[1]
-  }else {
+  } else {
     var lane = queryGameType(gameInfo.queueId)
   }
 

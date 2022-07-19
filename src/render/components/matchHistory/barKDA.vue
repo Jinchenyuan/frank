@@ -59,6 +59,8 @@
               barBorderRadius: [5, 5, 0, 0],
               label: {//这里是设置label的样式
                 show: true,
+                text: '召唤师 实力排行',
+                subtext: '选取最近5场本局游戏模式进行分析',
                 textStyle: {
                   fontWeight: 'bolder',
                   fontSize: '15',
@@ -204,7 +206,7 @@
               text
               @click="handleMin" color="black">
               <n-icon size="25">
-                <ChevronsDownLeft/>
+                <ChevronsDownLeft />
               </n-icon>
             </n-button>
 
@@ -223,7 +225,7 @@
             <n-popover :show-arrow="false" trigger="hover" :delay="1000">
               <template #trigger>
                 <n-icon size="24" v-mouse-drag="handleChangePosition">
-                  <Ballon/>
+                  <Ballon />
                 </n-icon>
               </template>
               移动窗口位置

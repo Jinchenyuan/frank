@@ -115,7 +115,7 @@
         <n-space>
           <n-tag :bordered="false">回到首页</n-tag>
           <n-button size="small" type="success" style="width: 214px;"
-                    secondary @click="toHomePage">因为热爱 所以联盟 BY: Java_S
+                    secondary @click="toHomePage">因为热爱 所以联盟
           </n-button>
         </n-space>
       </n-space>

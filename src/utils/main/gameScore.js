@@ -140,39 +140,34 @@ const inferRegularPosition = (arr) => {
 }
 
 // 通过分析单场数据得出单场得分情况
-const analyseSingleMatch = (match) => {
+const analyseSingleMatch = (match, gameDuration) => {
   let score = 100
-  if (match['firstBloodKill']) {
-    score += 10
-  } // 一血 加10分
-  if (match['firstBloodAssist']) {
-    score += 5
-  }// 一血助攻 加5分
-  if (match['causedEarlySurrender']) {
-    score -= 10
-  } // 15投发起者 扣10分
-  if (match['win']) {
-    score += 5
-  } else {
-    score -= 5
-  }// 游戏胜利 加5分
-  score += match['doubleKills'] * 2 // 一次双杀加2分
-  score += match['tripleKills'] * 5 // 一次三杀加5分
-  score += match['quadraKills'] * 10 // 一次四杀加10分
-  score += match['pentaKills'] * 15 // 一次五杀加15分
-  score += (match['kills'] - match['deaths'])
-  score += match['assists'] * 0.5
+  if (match['firstBloodKill']) { score += 10 }                //一血 +10
+  if (match['firstBloodAssist']) { score += 5 }               //一血助攻 +5
+  if (match['causedEarlySurrender']) { score -= 5 }           //发起15投 -5
+  if (match['win']) { score += 30 } else { score -= 20 }      //赢了 +30 输了 -20
+  score += match['turretKills'] * 2                           //推塔每座+2
+  score += match['inhibitorKills'] * 5                        //摧毁水晶每座+5
+  score += match['visionScore'] / 3                           //视野得分 总得分/3
+  score += match['doubleKills'] * 1                           //双杀 每次+1
+  score += match['tripleKills'] * 3                           //三杀 每次+3
+  score += match['quadraKills'] * 10                          //四杀 每次+10
+  score += match['pentaKills'] * 15                           //五杀 每次+15
+  score += (match['kills'] - match['deaths']) * 2             //（击杀 - 死亡）x 2
+  score += match['assists']                                   //助攻 每次+1
+  score += ((match['totalDamageDealtToChampions'] / (gameDuration / 60)) / 1000) * 10 //伤害 分均伤害每1000 + 10
+  score += ((match['totalDamageTaken'] / (gameDuration / 60)) / 1000) * 10 //承伤 分均承伤每1000 + 10
   return score
 }
 // 判断是否为 上等马或者下等马
 const jundgeHorse = (score) => {
-  if (score >= 120) {
+  if (score >= 150) {
     return appConfig.get('horseType.top')
-  } else if (score >= 110) {
+  } else if (score >= 140) {
     return appConfig.get('horseType.mid')
-  } else if (score >= 100) {
+  } else if (score >= 130) {
     return appConfig.get('horseType.bot')
-  } else if (score < 100) {
+  } else if (score < 120) {
     return appConfig.get('horseType.trash')
   }
 }

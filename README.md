@@ -71,6 +71,12 @@ yarn electron:serve
 ```
 yarn electron:build
 ```
+
+### 打包项目
+```
+yarn add electron-builder --dev
+npm run electron:build
+```
 ## 目录结构
 ```
 ├─frankElectron
