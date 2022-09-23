@@ -148,7 +148,7 @@ const analyseSingleMatch = (match, gameDuration) => {
   if (match['win']) { score += 30 } else { score -= 20 }      //赢了 +30 输了 -20
   score += match['turretKills'] * 2                           //推塔每座+2
   score += match['inhibitorKills'] * 5                        //摧毁水晶每座+5
-  score += match['visionScore'] / 3                           //视野得分 总得分/3
+  score += match['visionScore'] / 5                           //视野得分 总得分/5
   score += match['doubleKills'] * 1                           //双杀 每次+1
   score += match['tripleKills'] * 3                           //三杀 每次+3
   score += match['quadraKills'] * 10                          //四杀 每次+10
