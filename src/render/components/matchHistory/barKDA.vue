@@ -289,7 +289,7 @@ const handleMin = () => {
 }
 const sendToChat = () => {
   if (summonerName.value.length ===0){sendPopover.value = !sendPopover.value; return}
-  let sendMessage = 'Powered By Frank \n'
+  let sendMessage = ''
   for (const summonerDatum of summonerName.value) {
     const currentSummonerIndex = echartsData.value.name.indexOf(summonerDatum)
     let sendInfo = `${summonerDatum}: [ ${echartsData.value['horse'][currentSummonerIndex]} ] score:${echartsData.value['data'][currentSummonerIndex]} recent record:${echartsData.value['kdaHistory'][currentSummonerIndex]}`
